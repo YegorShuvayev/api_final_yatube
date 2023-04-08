@@ -3,7 +3,7 @@ API views
 """
 
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.pagination import LimitOffsetPagination
@@ -38,12 +38,6 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def perform_update(self, serializer):
-        super(PostViewSet, self).perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        super(PostViewSet, self).perform_destroy(instance)
-
 
 class CommentViewSet(viewsets.ModelViewSet):
     """Comment view set."""
@@ -60,8 +54,10 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, post=self.get_post())
 
 
-class FollowViewSet(viewsets.ModelViewSet):
-    """Group view set."""
+class FollowViewSet(mixins.ListModelMixin,
+                    mixins.CreateModelMixin,
+                    viewsets.GenericViewSet):
+    """Follow view set."""
     serializer_class = FollowSerializer
     permission_classes = (IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
